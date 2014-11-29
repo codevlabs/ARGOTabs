@@ -22,20 +22,7 @@ var express = require('express');
 var path = require('path');
 var mainBowerFiles = require('main-bower-files');
 var fs = require('fs');
-
-var opts = {
-  autoprefixer: [
-    'ie >= 8',
-    'ie_mob >= 9',
-    'ff >= 30',
-    'chrome >= 30',
-    'safari >= 6',
-    'opera >= 23',
-    'ios >= 6',
-    'android >= 2.3',
-    'bb >= 9'
-  ]
-};
+var _ = require('lodash');
 
 // Turn index.jade into an HTML file.
 gulp.task('index.html', function () {
@@ -65,7 +52,11 @@ var spitJs = function (bundleStream) {
 
 // Bundles Browserify for production; no source or coverage maps.
 gulp.task('js', ['templates'], function () {
-  var bundleStream = browserify(paths.app + '/js/main.js')
+  var opts = _.extend({
+    entries: [paths.app + '/js/main.js'],
+  }, config.browserify);
+
+  var bundleStream = browserify(opts)
     .bundle();
 
   return spitJs(bundleStream);
@@ -73,7 +64,12 @@ gulp.task('js', ['templates'], function () {
 
 // Bundles Browserify with Istanbul coverage maps.
 gulp.task('js:istanbul', ['templates'], function () {
-  var bundleStream = browserify(paths.app + '/js/main.js')
+  var opts = _.extend({
+    entries: [paths.app + '/js/main.js'],
+    debug: true,
+  }, config.browserify);
+
+  var bundleStream = browserify(opts)
     .transform(istanbul({
       ignore: ['**/lib/**']
     }))
@@ -88,10 +84,13 @@ function jsDev() {
   // Incremental development bundle.
   // Stored as a global variable so it can be reused
   // between compiles by `browserify-incremental`
-  global.incDevBundle = global.incDevBundle || browserifyIncremental({
-      entries: paths.app + '/js/main.js',
-      debug: true
-    });
+  
+  var opts = _.extend({
+    entries: [paths.app + '/js/main.js'],
+    debug: true,
+  }, config.browserify);
+
+  global.incDevBundle = global.incDevBundle || browserifyIncremental(opts);
 
   var bundleStream = global.incDevBundle
     .bundle()
@@ -108,7 +107,7 @@ gulp.task('js:dev:notemplates', [], jsDev);
 gulp.task('css', function () {
   return gulp.src(paths.app + '/css/main.styl')
     .pipe($.stylus())
-    .pipe($.autoprefixer(opts.autoprefixer))
+    .pipe($.autoprefixer(config.autoprefixer))
     .pipe(gulp.dest(paths.tmp + '/css'))
     .pipe(browserSync.reload({stream: true}));
 });

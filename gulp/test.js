@@ -12,8 +12,7 @@ var ngrok = require('ngrok');
 
 var karmaConf = {
   browsers: ['PhantomJS'],
-  frameworks: ['mocha'],
-  preprocessors: {},
+  frameworks: ['mocha', 'browserify'],
   files: [
     paths.app + '/bower_components/jquery/dist/jquery.min.js',
     paths.app + '/bower_components/bootstrap/dist/js/bootstrap.min.js',
@@ -21,6 +20,9 @@ var karmaConf = {
     './node_modules/should/should.min.js',
     paths.test + '/**/*.spec.js'
   ],
+  preprocessors: {
+    'test/**/*.js': [ 'browserify' ],
+  },
   reporters: ['mocha', 'osx', 'coverage'],
   coverageReporter: {
     type : 'lcov',
@@ -28,7 +30,10 @@ var karmaConf = {
     subdir: function (browser) {
       return browser.toLowerCase().split(/[ /-]/)[0];
     }
-  }
+  },
+  browserify: _.extend({
+    debug: true
+  }, config.browserify),
 };
 
 karmaConf.preprocessors[paths.tmp + '/js/main.js'] = ['coverage'];
@@ -37,6 +42,11 @@ karmaConf.preprocessors[paths.tmp + '/js/main.js'] = ['coverage'];
 gulp.task('test', function (done) {
   karma.start(karmaConf, done);
 });
+
+// Run the tests only once, while also building for CI.
+//gulp.task('test:once', ['build:test'], function () {
+  //karma.start(_.assign({}, karmaConf, { singleRun: true }));
+//});
 
 // Run the tests only once, while also building for CI.
 gulp.task('test:once', ['build:test'], function () {

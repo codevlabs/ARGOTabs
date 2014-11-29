@@ -1,10 +1,9 @@
 'use strict';
 
 var _ = require('lodash');
-var $ = require('./shims/jquery');
+var $ = require('./lib/jquery');
 var browser = require('bowser').browser;
 var loadcss = require('./lib/loadcss');
-var MainView = require('./views/mainview');
 
 module.exports = {
   launch: _.once(function () {
@@ -37,11 +36,11 @@ module.exports = {
         });
       }
 
-      var mainView = self.view = new MainView({
-        el: $('#main-view'),
-      });
+      //var mainView = self.view = new MainView({
+        //el: $('#main-view'),
+      //});
 
-      mainView.render();
+      //mainView.render();
     });
 
   })
